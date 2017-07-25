@@ -11,6 +11,7 @@
 #include <sys/stat.h> //for file info
 #include <errno.h>    //for errno
 #include <unistd.h>   //for unlink etc.
+#include <dirent.h>
 
 #include "Checksum.hh" //checksum calculation
 
@@ -30,7 +31,7 @@ int Fileinfo::fillwithbytes (enum readtobuffermode filltype,
           // pointless to read - all bytes in the file are in the field
           // m_somebytes, or checksum is calculated!
           //      cout<<"Skipped reading from file because lasttype="<<lasttype
-          //	  <<" and size="<<size()<<endl;
+          //    <<" and size="<<size()<<endl;
           return 0;
         }
     }
@@ -238,8 +239,22 @@ int Fileinfo::makesymlink (const Fileinfo &A)
   std::string target = A.name ();
   makeReadyForLink (target, name ());
 
+  std::string prefix = "";
+  int pos = name().length();
+  while (true) {
+    pos = target.rfind('/', pos - 1);
+    if (target.substr(0, pos) == name().substr(0, pos)) {
+       retval = symlinkat((prefix + target.substr(pos + 1)).c_str(), dirfd(opendir(target.substr(0, pos).c_str())), name().substr(pos + 1).c_str());
+       break;
+    } else if(pos == std::string::npos) {
+       retval = -1;
+       cerr << "failed to determine relative file " << name () << " to " << A.name () << endl;
+    }
+    prefix += "../";
+  }
+
   //  std::cout<<"will call symlink("<<target<<","<<name()<<")"<<std::endl;
-  retval = symlink (target.c_str (), name ().c_str ());
+  //retval = symlink (target.c_str (), name ().c_str ());
   if (retval)
     {
       cerr << "failed to make symlink " << name () << " to " << A.name ()

@@ -1,0 +1,8 @@
+*.o
+*.Po
+Makefile
+rdfind
+stamp-h1
+config.h
+config.status
+config.log
