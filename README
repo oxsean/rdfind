@@ -1,0 +1,8 @@
+rdfind - a tool for finding duplicate files (Redundant Data Find)
+
+To build this utility, you need libnettle.
+
+There is a manpage included as documentation.
+
+by Paul Sundvall 20060114
+
